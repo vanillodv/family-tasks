@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Семейные Задачи</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; color: #333; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; color: white; margin-bottom: 30px; }
+        .header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        .header p { font-size: 1.1rem; opacity: 0.9; }
+        .main-content { display: grid; grid-template-columns: 300px 1fr; gap: 30px; }
+        .sidebar { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); height: fit-content; }
+        .stats { margin-bottom: 30px; }
+        .stats h3, .filters h3, .categories h3 { color: #4a5568; margin-bottom: 15px; font-size: 1.1rem; }
+        .stat-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #e2e8f0; }
+        .stat-number { font-weight: bold; font-size: 1.2rem; color: #667eea; }
+        .filter-btn, .category-btn { display: block; width: 100%; padding: 12px 15px; margin-bottom: 8px; border: none; border-radius: 8px; background: #f7fafc; color: #4a5568; cursor: pointer; transition: all 0.3s ease; }
+        .filter-btn:hover, .category-btn:hover { background: #e2e8f0; }
+        .filter-btn.active, .category-btn.active { background: #667eea; color: white; }
+        .content { background: white; border-radius: 15px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .add-task-section { margin-bottom: 40px; padding-bottom: 30px; border-bottom: 2px solid #e2e8f0; }
+        .add-task-section h2, .tasks-section h2 { color: #2d3748; margin-bottom: 20px; }
+        .task-form { display: flex; flex-direction: column; gap: 20px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+        input, textarea, select { padding: 12px 15px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem; transition: border-color 0.3s ease; }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: #667eea; }
+        textarea { resize: vertical; min-height: 80px; }
+        .add-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 15px 25px; border-radius: 8px; font-size: 1.1rem; cursor: pointer; transition: transform 0.3s ease; }
+        .add-btn:hover { transform: translateY(-2px); }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .sort-options select { padding: 8px 12px; border-radius: 6px; }
+        .tasks-list { display: flex; flex-direction: column; gap: 15px; }
+        .task-item { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; padding: 20px; transition: all 0.3s ease; }
+        .task-item:hover { border-color: #667eea; transform: translateY(-2px); }
+        .task-item.completed { opacity: 0.7; background: #f0fff4; border-color: #68d391; }
+        .task-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .task-title { font-size: 1.2rem; font-weight: 600; color: #2d3748; }
+        .task-actions { display: flex; gap: 10px; }
+        .task-actions button { padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; transition: all 0.3s ease; }
+        .complete-btn { background: #48bb78; color: white; }
+        .delete-btn { background: #f56565; color: white; }
+        .task-meta { display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap; }
+        .task-category, .task-priority, .task-date, .task-assigned { padding: 5px 10px; border-radius: 15px; font-size: 0.85rem; font-weight: 500; }
+        .task-category { background: #e6fffa; color: #234e52; }
+        .task-priority.high { background: #fed7d7; color: #c53030; }
+        .task-priority.medium { background: #fef5e7; color: #c05621; }
+        .task-priority.low { background: #f0fff4; color: #22543d; }
+        .task-date { background: #ebf8ff; color: #2a4365; }
+        .task-assigned { background: #fef5e7; color: #c05621; }
+        .users-section { margin-top: 30px; }
+        .users-section h3 { color: #4a5568; margin-bottom: 15px; font-size: 1.1rem; }
+        .users-list { margin-bottom: 15px; }
+        .user-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; margin-bottom: 8px; background: #f7fafc; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.9rem; }
+        .user-name { font-weight: 500; color: #2d3748; }
+        .user-tasks-count { background: #667eea; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; }
+        .add-user-btn { width: 100%; padding: 10px 15px; border: 2px dashed #cbd5e0; border-radius: 8px; background: transparent; color: #4a5568; cursor: pointer; transition: all 0.3s ease; }
+        .add-user-btn:hover { border-color: #667eea; color: #667eea; }
+        .user-form { display: none; margin-top: 15px; padding: 15px; background: #f7fafc; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .user-form.show { display: block; }
+        .user-form input { margin-bottom: 10px; }
+        .user-form-buttons { display: flex; gap: 10px; }
+        .user-form-buttons button { flex: 1; padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; }
+        .save-user-btn { background: #48bb78; color: white; }
+        .cancel-user-btn { background: #e2e8f0; color: #4a5568; }
+        @media (max-width: 768px) {
+            .main-content { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; }
+            .header h1 { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🏠 Семейные Задачи</h1>
+            <p>Организуйте дела всей семьей</p>
+        </header>
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="stats">
+                    <h3>Статистика</h3>
+                    <div class="stat-item"><span class="stat-number" id="total-tasks">0</span><span class="stat-label">Всего задач</span></div>
+                    <div class="stat-item"><span class="stat-number" id="completed-tasks">0</span><span class="stat-label">Выполнено</span></div>
+                    <div class="stat-item"><span class="stat-number" id="pending-tasks">0</span><span class="stat-label">В ожидании</span></div>
+                </div>
+                <div class="filters">
+                    <h3>Фильтры</h3>
+                    <button class="filter-btn active" data-filter="all">Все задачи</button>
+                    <button class="filter-btn" data-filter="pending">Активные</button>
+                    <button class="filter-btn" data-filter="completed">Выполненные</button>
+                </div>
+                <div class="categories">
+                    <h3>Категории</h3>
+                    <button class="category-btn active" data-category="all">Все</button>
+                    <button class="category-btn" data-category="home">Дом</button>
+                    <button class="category-btn" data-category="work">Работа</button>
+                    <button class="category-btn" data-category="family">Семья</button>
+                    <button class="category-btn" data-category="health">Здоровье</button>
+                </div>
+                <div class="users-section">
+                    <h3>👨‍👩‍👧‍👦 Семья</h3>
+                    <div id="users-list" class="users-list"></div>
+                    <button id="add-user-btn" class="add-user-btn">➕ Добавить члена семьи</button>
+                    <div id="user-form" class="user-form">
+                        <input type="text" id="user-name" placeholder="Имя члена семьи" required>
+                        <div class="user-form-buttons">
+                            <button type="button" id="save-user-btn" class="save-user-btn">Сохранить</button>
+                            <button type="button" id="cancel-user-btn" class="cancel-user-btn">Отмена</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content">
+                <div class="add-task-section">
+                    <h2>Добавить новую задачу</h2>
+                    <form id="task-form" class="task-form">
+                        <div class="form-group"><input type="text" id="task-title" placeholder="Название задачи" required></div>
+                        <div class="form-group"><textarea id="task-description" placeholder="Описание задачи (необязательно)"></textarea></div>
+                        <div class="form-row">
+                            <div class="form-group"><select id="task-category"><option value="home">Дом</option><option value="work">Работа</option><option value="family">Семья</option><option value="health">Здоровье</option></select></div>
+                            <div class="form-group"><select id="task-priority"><option value="low">Низкий</option><option value="medium">Средний</option><option value="high">Высокий</option></select></div>
+                            <div class="form-group"><input type="date" id="task-due-date"></div>
+                        </div>
+                        <div class="form-group">
+                            <select id="task-assigned-user">
+                                <option value="">Назначить кому-то (необязательно)</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="add-btn">➕ Добавить задачу</button>
+                    </form>
+                </div>
+                <div class="tasks-section">
+                    <div class="section-header">
+                        <h2>Задачи</h2>
+                        <div class="sort-options"><select id="sort-select"><option value="date">По дате</option><option value="priority">По приоритету</option><option value="category">По категории</option></select></div>
+                    </div>
+                    <div id="tasks-list" class="tasks-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        let tasks = JSON.parse(localStorage.getItem('familyTasks')) || [];
+        let users = JSON.parse(localStorage.getItem('familyUsers')) || [];
+        let currentFilter = 'all';
+        let currentCategory = 'all';
+        let currentSort = 'date';
+        document.addEventListener('DOMContentLoaded', function() { renderUsers(); renderTasks(); updateStats(); setupEventListeners(); });
+        function setupEventListeners() {
+            document.getElementById('task-form').addEventListener('submit', addTask);
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.addEventListener('click', function() { document.querySelector('.filter-btn.active').classList.remove('active'); this.classList.add('active'); currentFilter = this.dataset.filter; renderTasks(); }));
+            document.querySelectorAll('.category-btn').forEach(btn => btn.addEventListener('click', function() { document.querySelector('.category-btn.active').classList.remove('active'); this.classList.add('active'); currentCategory = this.dataset.category; renderTasks(); }));
+            document.getElementById('sort-select').addEventListener('change', function() { currentSort = this.value; renderTasks(); });
+            document.getElementById('add-user-btn').addEventListener('click', showUserForm);
+            document.getElementById('save-user-btn').addEventListener('click', addUser);
+            document.getElementById('cancel-user-btn').addEventListener('click', hideUserForm);
+        }
+        function addTask(e) {
+            e.preventDefault();
+            const title = document.getElementById('task-title').value.trim();
+            const description = document.getElementById('task-description').value.trim();
+            const category = document.getElementById('task-category').value;
+            const priority = document.getElementById('task-priority').value;
+            const dueDate = document.getElementById('task-due-date').value;
+            const assignedUserId = document.getElementById('task-assigned-user').value;
+            if (!title) return;
+            const newTask = { id: Date.now(), title, description, category, priority, dueDate, assignedUserId: assignedUserId || null, completed: false, createdAt: new Date().toISOString() };
+            tasks.unshift(newTask);
+            saveTasks();
+            renderTasks();
+            updateStats();
+            document.getElementById('task-form').reset();
+        }
+        function toggleTask(id) { const task = tasks.find(t => t.id === id); if (task) { task.completed = !task.completed; saveTasks(); renderTasks(); updateStats(); } }
+        function deleteTask(id) { if (confirm('Вы уверены, что хотите удалить эту задачу?')) { tasks = tasks.filter(t => t.id !== id); saveTasks(); renderTasks(); updateStats(); } }
+        function saveTasks() { localStorage.setItem('familyTasks', JSON.stringify(tasks)); }
+        function saveUsers() { localStorage.setItem('familyUsers', JSON.stringify(users)); }
+        function showUserForm() { document.getElementById('user-form').classList.add('show'); document.getElementById('user-name').focus(); }
+        function hideUserForm() { document.getElementById('user-form').classList.remove('show'); document.getElementById('user-name').value = ''; }
+        function addUser() {
+            const name = document.getElementById('user-name').value.trim();
+            if (!name) return;
+            const newUser = { id: Date.now(), name, avatar: name.charAt(0).toUpperCase() };
+            users.push(newUser);
+            saveUsers();
+            renderUsers();
+            hideUserForm();
+        }
+        function deleteUser(id) {
+            if (confirm('Вы уверены, что хотите удалить этого члена семьи? Все его задачи станут неназначенными.')) {
+                users = users.filter(u => u.id !== id);
+                tasks.forEach(task => { if (task.assignedUserId === id) task.assignedUserId = null; });
+                saveUsers();
+                saveTasks();
+                renderUsers();
+                renderTasks();
+            }
+        }
+        function renderUsers() {
+            const usersList = document.getElementById('users-list');
+            const assignedUserSelect = document.getElementById('task-assigned-user');
+            
+            if (users.length === 0) {
+                usersList.innerHTML = '<p style="text-align: center; color: #718096; padding: 20px; font-size: 0.9rem;">Добавьте членов семьи</p>';
+            } else {
+                usersList.innerHTML = users.map(user => {
+                    const userTasksCount = tasks.filter(task => task.assignedUserId === user.id).length;
+                    return `
+                        <div class="user-item">
+                            <div class="user-info">
+                                <div class="user-avatar">${user.avatar}</div>
+                                <div class="user-name">${user.name}</div>
+                            </div>
+                            <div class="user-tasks-count">${userTasksCount}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            // Обновляем список в форме задач
+            assignedUserSelect.innerHTML = '<option value="">Назначить кому-то (необязательно)</option>' + 
+                users.map(user => `<option value="${user.id}">${user.name}</option>`).join('');
+        }
+        function updateStats() { const total = tasks.length; const completed = tasks.filter(t => t.completed).length; const pending = total - completed; document.getElementById('total-tasks').textContent = total; document.getElementById('completed-tasks').textContent = completed; document.getElementById('pending-tasks').textContent = pending; }
+        function renderTasks() {
+            const tasksList = document.getElementById('tasks-list');
+            let filteredTasks = tasks.filter(task => { const matchesFilter = currentFilter === 'all' || (currentFilter === 'completed' && task.completed) || (currentFilter === 'pending' && !task.completed); const matchesCategory = currentCategory === 'all' || task.category === currentCategory; return matchesFilter && matchesCategory; });
+            filteredTasks.sort((a, b) => { switch (currentSort) { case 'priority': const priorityOrder = { high: 3, medium: 2, low: 1 }; return priorityOrder[b.priority] - priorityOrder[a.priority]; case 'category': return a.category.localeCompare(b.category); case 'date': default: return new Date(b.createdAt) - new Date(a.createdAt); } });
+            if (filteredTasks.length === 0) { tasksList.innerHTML = '<p style="text-align: center; color: #718096; padding: 40px;">Задач пока нет</p>'; return; }
+            tasksList.innerHTML = filteredTasks.map(task => `
+                <div class="task-item ${task.completed ? 'completed' : ''}">
+                    <div class="task-header">
+                        <div class="task-title">${task.completed ? '<s>' + task.title + '</s>' : task.title}</div>
+                        <div class="task-actions">
+                            <button class="complete-btn" onclick="toggleTask(${task.id})">${task.completed ? '↶' : '✓'}</button>
+                            <button class="delete-btn" onclick="deleteTask(${task.id})">🗑️</button>
+                        </div>
+                    </div>
+                    ${task.description ? `<p style="color: #4a5568; margin: 10px 0;">${task.description}</p>` : ''}
+                    <div class="task-meta">
+                        <span class="task-category">${getCategoryName(task.category)}</span>
+                        <span class="task-priority ${task.priority}">${getPriorityName(task.priority)}</span>
+                        ${task.dueDate ? `<span class="task-date">Срок: ${formatDate(task.dueDate)}</span>` : ''}
+                        ${task.assignedUserId ? `<span class="task-assigned">👤 ${getUserName(task.assignedUserId)}</span>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+        function getCategoryName(category) { const names = { home: '🏠 Дом', work: '💼 Работа', family: '👨‍👩‍👧‍👦 Семья', health: '🏥 Здоровье' }; return names[category] || category; }
+        function getPriorityName(priority) { const names = { low: '🟢 Низкий', medium: '🟡 Средний', high: '🔴 Высокий' }; return names[priority] || priority; }
+        function getUserName(userId) { const user = users.find(u => u.id == userId); return user ? user.name : 'Неизвестный'; }
+        function formatDate(dateString) { const date = new Date(dateString); return date.toLocaleDateString('ru-RU'); }
+    </script>
+</body>
+</html>
